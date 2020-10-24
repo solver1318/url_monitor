@@ -1,0 +1,3 @@
+{
+	"TARGETS": ["http://localhost:%s/200", "http://localhost:%s/503"]
+}

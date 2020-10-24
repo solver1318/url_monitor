@@ -1,0 +1,6 @@
+{
+	"TARGETS": [
+	    "https://httpsURL/path",
+	    "http://httpURL/path"
+    ]
+}
