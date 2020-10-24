@@ -3,8 +3,8 @@ Linkedin: https://www.linkedin.com/in/dongyou-james-seo
 
 # URL-Monitoring
 ## Description
-Simple python webserver which has one path **/metrics** and collect URL availability and response time(ms). \
-**GET /metrics**: collect availability, UP(1) or DOWN(0), and URL response time in Prometheus format like this:
+Simple python webserver which has one path **/metrics** and collect URL availability and response time(ms) for each the predefined target URL. \
+**GET /metrics**: collect availability, UP(1) or DOWN(0), and URL response time for each target URL and return Prometheus format output like this:
 ```BASH
 sample_external_url__up{url="https://httpstat.us/503"} 0.0
 sample_external_url__response_ms{url="https://httpstat.us/503"} 155.116
@@ -24,38 +24,37 @@ pip install -r requirements.txt
 
 ## How to run unittests
 It simply verifies classes one by one.
-NOTE: In case of Collector and HTTPConnector classes, it sets up a mock server and the test cases actually use the classes to access the mock server and collect metrics.  
+**NOTE: In case of Collector and HTTPConnector classes, it sets up a mock server and the test cases actually use the classes to access the mock server and collect metrics.**  
 ```BASH
 python -m unittest discover -v
-test_collectFromWrongURL (test.test_collector.TestCollector) ... 2020-10-23 19:01:03,589         [DEBUG | http_connector.py:23] > GET http://localhost:9999/404
-127.0.0.1 - - [23/Oct/2020 19:01:04] "GET /404 HTTP/1.1" 404 -
+test_collectFromWrongURL (test.test_collector.TestCollector) ... 2020-10-23 23:23:07,296         [DEBUG | http_connector.py:21] > GET http://localhost:9999/404
+127.0.0.1 - - [23/Oct/2020 23:23:09] "GET /404 HTTP/1.1" 404 -
 ok
 /Library/Developer/CommandLineTools/Library/Frameworks/Python3.framework/Versions/3.7/lib/python3.7/unittest/suite.py:107: ResourceWarning: unclosed <socket.socket fd=4, family=AddressFamily.AF_INET, type=SocketKind.SOCK_STREAM, proto=0, laddr=('127.0.0.1', 9999)>
   for index, test in enumerate(self):
 ResourceWarning: Enable tracemalloc to get the object allocation traceback
-test_collectSuccessfully (test.test_collector.TestCollector) ... 2020-10-23 19:01:04,613         [DEBUG | http_connector.py:23] > GET http://localhost:9999/200
-127.0.0.1 - - [23/Oct/2020 19:01:06] "GET /200 HTTP/1.1" 200 -
-2020-10-23 19:01:06,618          [DEBUG | collector.py:35] > HTTP Status (200) and elapsedTime (2003.506 ms) 
-2020-10-23 19:01:06,618          [DEBUG | collector.py:49] > Collecting done
-2020-10-23 19:01:06,618          [DEBUG | http_connector.py:23] > GET http://localhost:9999/503
-127.0.0.1 - - [23/Oct/2020 19:01:07] "GET /503 HTTP/1.1" 503 -
-2020-10-23 19:01:07,627          [DEBUG | collector.py:35] > HTTP Status (503) and elapsedTime (1007.254 ms) 
-2020-10-23 19:01:07,627          [DEBUG | collector.py:49] > Collecting done
+test_collectSuccessfully (test.test_collector.TestCollector) ... 2020-10-23 23:23:09,830         [DEBUG | http_connector.py:21] > GET http://localhost:9999/200
+127.0.0.1 - - [23/Oct/2020 23:23:11] "GET /200 HTTP/1.1" 200 -
+2020-10-23 23:23:11,834          [DEBUG | collector.py:35] > HTTP Status (200) and elapsedTime (2003.399 ms) 
+2020-10-23 23:23:11,835          [DEBUG | collector.py:49] > Collecting done
+2020-10-23 23:23:11,835          [DEBUG | http_connector.py:21] > GET http://localhost:9999/503
+127.0.0.1 - - [23/Oct/2020 23:23:13] "GET /503 HTTP/1.1" 503 -
+2020-10-23 23:23:13,842          [DEBUG | collector.py:35] > HTTP Status (503) and elapsedTime (2005.507 ms) 
+2020-10-23 23:23:13,842          [DEBUG | collector.py:49] > Collecting done
 ok
 /Library/Developer/CommandLineTools/Library/Frameworks/Python3.framework/Versions/3.7/lib/python3.7/unittest/suite.py:84: ResourceWarning: unclosed <socket.socket fd=4, family=AddressFamily.AF_INET, type=SocketKind.SOCK_STREAM, proto=0, laddr=('127.0.0.1', 9999)>
   return self.run(*args, **kwds)
 ResourceWarning: Enable tracemalloc to get the object allocation traceback
 test_getTargets (test.test_config.TestConfig) ... ok
-testAccessToMockserver (test.test_http_connector.TestHttpConnector) ... 2020-10-23 19:01:08,135          [DEBUG | http_connector.py:23] > GET http://localhost:9999/200
-127.0.0.1 - - [23/Oct/2020 19:01:09] "GET /200 HTTP/1.1" 200 -
-2020-10-23 19:01:09,145          [DEBUG | http_connector.py:23] > GET http://localhost:9999/503
-127.0.0.1 - - [23/Oct/2020 19:01:10] "GET /503 HTTP/1.1" 503 -
+testAccessToMockserver (test.test_http_connector.TestHttpConnector) ... 2020-10-23 23:23:14,344          [DEBUG | http_connector.py:21] > GET http://localhost:9999/200
+127.0.0.1 - - [23/Oct/2020 23:23:15] "GET /200 HTTP/1.1" 200 -
+2020-10-23 23:23:15,352          [DEBUG | http_connector.py:21] > GET http://localhost:9999/503
+127.0.0.1 - - [23/Oct/2020 23:23:16] "GET /503 HTTP/1.1" 503 -
 ok
-test_getLogger (test.test_utils.TestUtils) ... ok
-test_retouch (test.test_utils.TestUtils) ... ok
+test_getLogger (test.test_logger.TestUtils) ... ok
 
 ----------------------------------------------------------------------
-Ran 6 tests in 7.069s
+Ran 5 tests in 9.578s
 
 OK
 ```
@@ -133,7 +132,7 @@ docker pull solver1318/test-image-42:vmware
 ```
 
 ## How to generate kubernetes manifest
-To generate the manifest, we need to define the below ones in Jsonnet command.
+To generate the manifest, we need to define the below inputs in **Jsonnet** command.
 1. namespace
 2. number of replicas
 3. target port number
@@ -157,7 +156,7 @@ kubectl apply -f k8s.json
 In **How to deploy**, you deployed total 5 K8s resources and they are summarized like this:
 1. Namespace: your target namespace
 2. Deployment: urlmon : urlmon backend pod(s)
-3. Service: urlmon-service : internal load balancer and redirect traffics to urlmon pod(s) 
+3. Service: urlmon-service : K8s internal load balancer and redirect traffics to urlmon pod(s) based on LB policy 
 4. ConfigMap: urlmon-config : configuration which includes target URLs\
 **NOTE: One design intent is that we can modify target URL list on the fly by editing urlmon-config**
 ```BASH
