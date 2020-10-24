@@ -269,12 +269,12 @@ kubectl port-forward grafana-d7bd666bc-r2dpl 3000:3000 -n url-monitoring
 3. Add Graph
 ![Add Grafana Graph](images/grafana_graph_add.png)
 4. Add/Edit Panel
-![Add Grafana Panel](images/grafana_panel_add.png)
-5. Select Data Source = Prometheus and put sample_external_url__up and save
-![Select sample_external_url__up](images/grafana_select_sample_external_url__up.png)
+![Add Grafana Panel](images/grafana_panel_add_edit.png)
+5. Select Prometheus as Data Source and put sample_external_url__up
+![Select sample_external_url__up](images/grafana_select_prometheus_data_source.png)
+![Select sample_external_url__up](images/grafana_put_sample_external_url__up.png)
 6. Add/Edit Panel one more
-7. Select Data Source = Prometheus and put sample_external_url__response_ms and save
-![Select sample_external_url__response_ms](images/grafana_select_sample_external_url__response_ms.png)
+7. Select Prometheus as Data Source and put sample_external_url__response_ms
 8. Check URL Monitoring Dashboard
 ![Grafana_URL_Monitoring](images/grafana_url_monitoring.png)
 
