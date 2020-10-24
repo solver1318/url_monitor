@@ -163,7 +163,7 @@ data:
     {"TARGETS": ["https://httpstat.us/503", "https://httpstat.us/200", "https://www.vmware.com"]} # https://www.vmware.com appended
 ...
 ```
-5. CronJob: client-job : Client Cronjob which accesses to http://urlmon-service:8080/metrics every 1min and receives the metrics for testing
+5. CronJob: client-job : Client Cronjob which accesses to http://urlmon-service:8080/metrics every 1min and receives the metrics for testing (Integration Test)
 
 ```BASH
 kubectl get pods -n url-monitoring
