@@ -24,7 +24,7 @@ pip install -r requirements.txt
 
 ## How to run unittests
 It simply verifies classes one by one.
-NOTE: In case of Collector and HTTPConnector classes, it sets up a mock server and the test cases actually uses the classes to access the mock server and collect metrics.  
+NOTE: In case of Collector and HTTPConnector classes, it sets up a mock server and the test cases actually use the classes to access the mock server and collect metrics.  
 ```BASH
 python -m unittest discover -v
 test_collectFromWrongURL (test.test_collector.TestCollector) ... 2020-10-23 19:01:03,589         [DEBUG | http_connector.py:23] > GET http://localhost:9999/404
