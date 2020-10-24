@@ -149,13 +149,21 @@ For example,
 kubectl apply -f k8s.json
 ```
 
-## Description
-After **How to deploy**, you deployed total 5 K8s resources.
+## Kubernetes Resources
+In **How to deploy**, you deployed total 5 K8s resources and they are summarized like this:
 1. Namespace: your target namespace
-2. Deployment: urlmon : urlmon backend deployment
+2. Deployment: urlmon : urlmon backend pod(s)
 3. Service: urlmon-service : internal load balancer and redirect traffics to urlmon pod(s) 
-4. ConfigMap: urlmon-config : configuration which includes target URLs
-5. CronJob: client-job : Client Cronjob which accesses to http://urlmon-service:8080/metrics every 1min and receives the metrics
+4. ConfigMap: urlmon-config : configuration which includes target URLs\
+**NOTE: One design intent is that we can modify target URL list on the fly by editing urlmon-config**
+```BASH
+apiVersion: v1
+data:
+  config.json: |
+    {"TARGETS": ["https://httpstat.us/503", "https://httpstat.us/200", "https://www.vmware.com"]} # https://www.vmware.com appended
+...
+```
+5. CronJob: client-job : Client Cronjob which accesses to http://urlmon-service:8080/metrics every 1min and receives the metrics for testing
 
 ```BASH
 kubectl get pods -n url-monitoring
