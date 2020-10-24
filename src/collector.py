@@ -13,7 +13,7 @@ AVAILABILITY = {
 class Collector:
     """
     Collect availability and response time from connector.
-    Register prometheus formatted metrics int registry.
+    Register prometheus formatted metrics into registry.
     """
 
     __PREFIX = 'sample_external_url_'
@@ -25,7 +25,7 @@ class Collector:
     def do(self):
         '''
         Call connector's access and receive HTTP status & response time(ms).
-        Put 2 Gauges objets, availability _up and response time _response_ms into registry
+        Put 2 Gauges objets, availability _up and response time _response_ms into registry.
         :return: None
         '''
         status, elapsedTime = self.__connector.access()

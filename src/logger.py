@@ -10,12 +10,12 @@ class SingletonType(type):
 
 class Logger(object, metaclass=SingletonType):
     """
-    Singleton logger.
+    Singleton logger shared by all classes.
     """
     _logger = None
 
     def __init__(self):
-        self._logger = logging.getLogger("urlMon")
+        self._logger = logging.getLogger("urlmon")
         self._logger.setLevel(logging.DEBUG)
         formatter = logging.Formatter('%(asctime)s \t [%(levelname)s | %(filename)s:%(lineno)s] > %(message)s')
         streamHandler = logging.StreamHandler()

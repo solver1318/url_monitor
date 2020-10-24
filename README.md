@@ -127,6 +127,10 @@ docker login
 docker tag <imageName>:<any tag> <your account name>/<imageName>:<any tag>
 docker push <your account name>/<imageName>:<any tag>
 ```
+Or you can simply pull and use the sample image.
+```BASH
+docker pull solver1318/test-image-42:vmware
+```
 
 ## How to generate kubernetes manifest
 To generate the manifest, we need to define the below ones in Jsonnet command.

@@ -9,9 +9,7 @@ class HTTPConnector:
 
     def __init__(self, url):
         """
-        HTTPConnector
-        Arguments:
-        url -- the url which we need to access
+        Connector to actually access to target url.
         """
         self.url = url
 
