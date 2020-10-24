@@ -5,7 +5,7 @@ from wsgiref.util import setup_testing_defaults
 from collector import Collector
 from http_connector import HTTPConnector
 from config import Config
-from utils import retouch, Logger
+from logger import Logger
 
 CONFIG_PATH_ENV = 'CONFIG_PATH'
 COMMENT_INDICATOR = '#'
@@ -36,7 +36,7 @@ def urlMonitoring(environ, response):
                     status = '500 Internal Server Error'
                     response(status, [('Content-Type', 'text/plain')])
                     return []
-                res.append(retouch(generate_latest(registry)))
+                res.append(generate_latest(registry))
 
         status = '200 OK'
         headers = [('Content-type', 'text/plain; charset=utf-8')]

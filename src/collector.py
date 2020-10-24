@@ -1,7 +1,7 @@
 from prometheus_client import Gauge
 from http_connector import HTTPConnector
 
-from utils import Logger
+from logger import Logger
 
 logger = Logger.__call__().get_logger()
 

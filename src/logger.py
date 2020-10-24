@@ -1,14 +1,3 @@
-COMMENT_INDICATOR = '#'
-
-def retouch(response):
-    '''
-    Remove # HELP XXXX and # TYPE XXXX lines to only include prometheus output lines.
-    :param response: utf-8 encoded prometheus format
-    :return: str: retouched lines
-    '''
-    output = [line + '\n' for line in response.decode().splitlines() if not line.startswith(COMMENT_INDICATOR)]
-    return ''.join(output).encode('utf-8')
-
 import logging
 
 class SingletonType(type):

@@ -1,5 +1,5 @@
 import requests
-from utils import Logger
+from logger import Logger
 
 logger = Logger.__call__().get_logger()
 
