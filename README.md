@@ -63,8 +63,8 @@ OK
 ```JSON
 {
 	"TARGETS": [
-	    "\<any URL1 like https://httpstat.us/503\>",
-	    "\<any URL2 like https://httpstat.us/200\>",
+	    "<any URL1 like https://httpstat.us/503>",
+	    "<any URL2 like https://httpstat.us/200>",
         ...
     ]
 }
