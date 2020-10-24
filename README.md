@@ -159,3 +159,59 @@ sample_external_url__response_ms{url="https://httpstat.us/503"} 282.474
 sample_external_url__up{url="https://httpstat.us/200"} 1.0
 sample_external_url__response_ms{url="https://httpstat.us/200"} 191.151
 ```
+
+## How to install Prometheus through Helm
+```BASH
+helm repo add stable https://kubernetes-charts.storage.googleapis.com
+helm repo update
+helm install prometheus stable/prometheus -n <target namespace>
+
+For example,
+kubectl get pods -n url-monitoring
+
+kubectl get pods -n url-monitoring
+NAME                                            READY   STATUS      RESTARTS   AGE
+client-job-1603513200-9d7m4                     0/1     Completed   0          4m54s
+client-job-1603513260-sv8zq                     0/1     Completed   0          3m54s
+client-job-1603513320-vvsn9                     0/1     Completed   0          2m53s
+client-job-1603513380-rbjsd                     0/1     Completed   0          113s
+client-job-1603513440-k7wwf                     0/1     Completed   0          53s
+prometheus-alertmanager-6b64586d49-xtwbs        2/2     Running     0          9m2s
+prometheus-kube-state-metrics-c65b87574-4567g   1/1     Running     0          38m
+prometheus-node-exporter-btwbj                  1/1     Running     0          38m
+prometheus-pushgateway-7d5f5746c7-mqzb6         1/1     Running     0          9m1s
+prometheus-server-f8d46859b-t2mnv               2/2     Running     0          7m58s
+urlmon-64c99b957f-nbktx                         1/1     Running     0          2m11s
+```
+
+## How to access Prometheus Alert Manger Console
+Execute port-forward to connect Prometheus from local to Kubernetes cluster 
+```
+export POD_NAME=$(kubectl get pods --namespace <target namespace> -l "app=prometheus,component=server" -o jsonpath="{.items[0].metadata.name}")
+kubectl --namespace url-monitoring port-forward $POD_NAME 9090
+Forwarding from 127.0.0.1:9090 -> 9090
+Forwarding from [::1]:9090 -> 9090
+```
+Open http://localhost:9090 in your browser 
+![Open Prometheus Alert Manger console](images/prometheus_alert_manager_console.png)
+
+## How to add urlmon GET /metrics in Prometheus
+Update prometheus-server configMap using kubectl edit
+```
+kubectl edit cm prometheus-server -n <target namespace>
+...
+    - job_name: prometheus
+      static_configs:
+      - targets:
+        - localhost:9090
+    - job_name: url-monitoring # Append url-monitoring job
+      static_configs:
+      - targets:
+        - urlmon-service:8080
+```
+Check if url-monitoring is added in Prometheus target
+![Check target_added](images/prometheus_check_target_added.png)
+
+Check if **sample_external_url__up** and **sample_external_url__response_ms** are added in Graph like this
+![Check sample_external_url metrics](images/prometheus_sample_external_url_metrics_added.png)
+![url-monitoring response graph](images/prometheus_response_ms_graph.png)
