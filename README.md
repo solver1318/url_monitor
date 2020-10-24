@@ -1,7 +1,8 @@
-## Author: Dongyou James Seo
+# Author: Dongyou James Seo
 Linkedin: https://www.linkedin.com/in/dongyou-james-seo
 
-## Project name: urlmon
+# Project name: urlmon
+## Description
 Simple python webserver which has one path **/metrics** and collect URL availability and response time(ms). \
 **GET /metrics**: collect availability, UP(1) or DOWN(0), and URL response time in Prometheus format like this:
 ```BASH
@@ -22,7 +23,8 @@ pip install -r requirements.txt
 ```
 
 ## How to run unittests
-It simply verifies class one by one and in case of Collector and HTTPConnector classes, set up a mock server and the test cases actually uses the classes to access the mock server and collect metrics.  
+It simply verifies classes one by one.
+NOTE: In case of Collector and HTTPConnector classes, it sets up a mock server and the test cases actually uses the classes to access the mock server and collect metrics.  
 ```BASH
 python -m unittest discover -v
 test_collectFromWrongURL (test.test_collector.TestCollector) ... 2020-10-23 19:01:03,589         [DEBUG | http_connector.py:23] > GET http://localhost:9999/404
@@ -76,11 +78,23 @@ export CONFIG_PATH=config.json
 
 3. Run main python file
 ```BASH
-python src/url_mon.py <target port>
+python src/url_mon.py <target port> 
+
+In different terminal, 
+curl -XGET http://localhost:8080/metrics
 
 For example,
 python src/url_mon.py 8080
-2020-10-23 19:16:58,504          [INFO | url_mon.py:53] > Serving on port 8080...
+2020-10-23 21:49:09,055          [INFO | url_mon.py:53] > Serving on port 8080...
+2020-10-23 21:49:17,458          [INFO | url_mon.py:25] > Start collecting metrics
+2020-10-23 21:49:17,459          [DEBUG | http_connector.py:23] > GET https://httpstat.us/503
+2020-10-23 21:49:17,592          [DEBUG | collector.py:35] > HTTP Status (503) and elapsedTime (119.098 ms) 
+2020-10-23 21:49:17,593          [DEBUG | collector.py:49] > Collecting done
+2020-10-23 21:49:17,593          [DEBUG | http_connector.py:23] > GET https://httpstat.us/200
+2020-10-23 21:49:17,736          [DEBUG | collector.py:35] > HTTP Status (200) and elapsedTime (137.867 ms) 
+2020-10-23 21:49:17,736          [DEBUG | collector.py:49] > Collecting done
+2020-10-23 21:49:17,736          [DEBUG | url_mon.py:43] > Successfully collected [b'# HELP sample_external_url__up Availability, UP or DOWN\n# TYPE sample_external_url__up gauge\nsample_external_url__up{url="https://httpstat.us/503"} 0.0\n# HELP sample_external_url__response_ms Elapsed Time(MS)\n# TYPE sample_external_url__response_ms gauge\nsample_external_url__response_ms{url="https://httpstat.us/503"} 119.098\n', b'# HELP sample_external_url__up Availability, UP or DOWN\n# TYPE sample_external_url__up gauge\nsample_external_url__up{url="https://httpstat.us/200"} 1.0\n# HELP sample_external_url__response_ms Elapsed Time(MS)\n# TYPE sample_external_url__response_ms gauge\nsample_external_url__response_ms{url="https://httpstat.us/200"} 137.867\n']
+127.0.0.1 - - [23/Oct/2020 21:49:17] "GET /metrics HTTP/1.1" 200 654
 ``` 
 
 ## How to build docker
@@ -160,6 +174,7 @@ sample_external_url__up{url="https://httpstat.us/200"} 1.0
 sample_external_url__response_ms{url="https://httpstat.us/200"} 191.151
 ```
 
+# Prometheus Integration
 ## How to install Prometheus through Helm
 ```BASH
 helm repo add stable https://kubernetes-charts.storage.googleapis.com
@@ -184,7 +199,7 @@ prometheus-server-f8d46859b-t2mnv               2/2     Running     0          7
 urlmon-64c99b957f-nbktx                         1/1     Running     0          2m11s
 ```
 
-## How to access Prometheus Alert Manger Console
+## How to access Prometheus Alert Manger console
 Execute port-forward to connect Prometheus from local to Kubernetes cluster 
 ```
 export POD_NAME=$(kubectl get pods --namespace <target namespace> -l "app=prometheus,component=server" -o jsonpath="{.items[0].metadata.name}")
