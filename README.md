@@ -158,7 +158,7 @@ jsonnet urlmon.jsonnet --ext-str namespace=<namespace> --ext-str replicas=<numbe
 For example,
 jsonnet urlmon.jsonnet --ext-str namespace=url-monitoring --ext-str replicas=1 --ext-str port=8080 --ext-str image=solver1318/test-image-42:vmware > k8s.json
 ```
-After the Jsonnet command, you will get a Kubernetes JSON Manifest.
+After the Jsonnet command, you will get a Kubernetes JSON Manifest, [sample](https://github.com/solver1318/url_monitor/blob/main/k8s/sample_k8s_by_jsonnet.json).
 
 ## Kubernetes Resources
 The Kubernetes Manifest includes the below 5 resources.
