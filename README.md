@@ -2,9 +2,13 @@
 Linkedin: https://www.linkedin.com/in/dongyou-james-seo
 
 # URL-Monitoring
-## Description
-Simple python webserver which has one path **/metrics** and collect URL availability and response time(ms) for each the predefined target URL. \
-**GET /metrics**: collect availability, UP(1) or DOWN(0), and URL response time for each target URL and return Prometheus format output like this:
+A simple python webserver (exporter) which collects availability and response time for each target URL.
+
+## REST API
+| HTTP method | Path | Description |
+|-------------|------|-------------|
+| GET | /metrics | Collect availability, UP(1) or DOWN(0), and response time(ms) for each target URL and return Prometheus format output|
+In the below example, the target URL == [https://httpstat.us/503, https://httpstat.us/200] and each URL has 2 prometheus outputs, **sample_external_url__up** and **sample_external_url__response_ms**.  
 ```BASH
 sample_external_url__up{url="https://httpstat.us/503"} 0.0
 sample_external_url__response_ms{url="https://httpstat.us/503"} 155.116
@@ -13,18 +17,27 @@ sample_external_url__response_ms{url="https://httpstat.us/200"} 93.34
 ```
 
 ## Prerequisites
-Please prepare the below prerequisites before start.
+Need to prepare the below prerequisites before start.
 1. python3
 2. jsonnet
-3. kubectl
-4. pip packages
+3. docker
+4. kubectl
+5. pip packages
 ```BASH
 pip install -r requirements.txt
 ```
 
-## How to run unittests
-It simply verifies classes one by one.
-**NOTE: In case of Collector and HTTPConnector classes, it sets up a mock server and the test cases actually use the classes to access the mock server and collect metrics.**  
+## Unittest
+They simply verifies classes one by one locally without generating any external traffic.
+
+| Test case | Description |
+|------|-------------|
+| test_collector.py | Start a mock web server and verify if **Collector** class can generate prometheus outputs accessing the mock server |
+| test_config.py | Verify if **Config** loads TARGET_URLs from **config.json** |
+| test_http_connector.py | Start a mock web server and verify if **HttpConnector** returns HTTP status and response time(ms) accessing the mock server |
+| test_logger.py | Verify if Singleton **Logger** is instantiated. |
+
+### How to run unittests
 ```BASH
 python -m unittest discover -v
 test_collectFromWrongURL (test.test_collector.TestCollector) ... 2020-10-23 23:23:07,296         [DEBUG | http_connector.py:21] > GET http://localhost:9999/404
@@ -70,7 +83,7 @@ OK
     ]
 }
 ```
-2. Export CONFIG_PATH
+2. Export CONFIG_PATH pointing to the config.json
 ```BASH
 export CONFIG_PATH=config.json
 ```
@@ -96,12 +109,12 @@ python src/url_mon.py 8080
 127.0.0.1 - - [23/Oct/2020 21:49:17] "GET /metrics HTTP/1.1" 200 654
 ``` 
 
-## How to build docker
+## How to build docker image
 ```BASH
 docker buld -t <imageName>:<any tag> ./
 
 For example, 
-docker build -t test-image-42:vmware ./
+docker build -t solver1318/test-image-42:vmware ./
 Sending build context to Docker daemon  16.15MB
 Step 1/5 : FROM python:3.7-slim
  ---> 217e85391449
@@ -118,30 +131,48 @@ Step 5/5 : RUN pip install -r requirements.txt
  ---> Using cache
  ---> 65dafa3bc2c9
 Successfully built 65dafa3bc2c9
-Successfully tagged test-image-42:vmware
+Successfully tagged solver1318/test-image-42:vmware
 ```
-If you wanna push the image into docker hub and use it in non-local Kubernetes.
+If you want to push the image into docker hub registry and use it in a real Kubernetes cluster. You need to publish it after login.
 ```BASH
 docker login
 docker tag <imageName>:<any tag> <your account name>/<imageName>:<any tag>
 docker push <your account name>/<imageName>:<any tag>
 ```
-Or you can simply pull and use the sample image.
+Or you can simply pull and use the uploaded image.
 ```BASH
 docker pull solver1318/test-image-42:vmware
 ```
 
-## How to generate kubernetes manifest
-To generate the manifest, we need to define the below inputs in **Jsonnet** command.
-1. namespace
-2. number of replicas
+## How to generate Kubernetes manifest
+To generate the manifest, we need to define the below inputs in **Jsonnet** command to dynamically template.
+1. target namespace
+2. number of replicas of urlmon pods
 3. target port number
-4. image built in previous section: \<imageName\>:\<any tag\>
+4. image built in **How to build docker image** section like \<imageName\>:\<any tag\>
 ```BASH
 jsonnet urlmon.jsonnet --ext-str namespace=<namespace> --ext-str replicas=<number of replicas> --ext-str port=<target port number> --ext-str image=<the image> > <k8s manifest name>.json
 
 For example,
 jsonnet urlmon.jsonnet --ext-str namespace=url-monitoring --ext-str replicas=1 --ext-str port=8080 --ext-str image=solver1318/test-image-42:vmware > k8s.json
+```
+After the Jsonnet command, you will get a Kubernetes JSON Manifest.
+
+## Kubernetes Resources
+The Kubernetes Manifest includes the below 5 resources.
+| Resource Type| Name | Description |
+|--------------|-------------|-------------|
+| Namespace | Whatever you want | Your target namespace |
+| Deployment | urlmon | urlmon backend pod(s) |
+| Service | urlmon-service | Kubernetes internal load balancer and redirect traffics to urlmon pod(s) based on LB policy |
+| ConfigMap | urlmon-config | Included config.json which includes target URLs |
+| CronJob | client-job | Client Cronjob which accesses to http://urlmon-service:8080/metrics every 1min and receives the metrics for testing (Integration Test) |
+**NOTE**: One design intent is that we can modify target URL list on the fly by editing **urlmon-config** Config map.
+```BASH
+apiVersion: v1
+data:
+  config.json: |
+    {"TARGETS": ["https://httpstat.us/503", "https://httpstat.us/200", "https://www.vmware.com"]} # https://www.vmware.com appended
 ```
 
 ## How to deploy
@@ -150,25 +181,6 @@ kubectl apply -f <k8s manifest JSON file path>
 
 For example,
 kubectl apply -f k8s.json
-```
-
-## Kubernetes Resources
-In **How to deploy**, you deployed total 5 K8s resources and they are summarized like this:
-1. Namespace: your target namespace
-2. Deployment: urlmon : urlmon backend pod(s)
-3. Service: urlmon-service : K8s internal load balancer and redirect traffics to urlmon pod(s) based on LB policy 
-4. ConfigMap: urlmon-config : configuration which includes target URLs\
-**NOTE: One design intent is that we can modify target URL list on the fly by editing urlmon-config**
-```BASH
-apiVersion: v1
-data:
-  config.json: |
-    {"TARGETS": ["https://httpstat.us/503", "https://httpstat.us/200", "https://www.vmware.com"]} # https://www.vmware.com appended
-...
-```
-5. CronJob: client-job : Client Cronjob which accesses to http://urlmon-service:8080/metrics every 1min and receives the metrics for testing (Integration Test)
-
-```BASH
 kubectl get pods -n url-monitoring
 NAME                          READY   STATUS      RESTARTS   AGE
 client-job-1603505940-dzn5k   0/1     Completed   0          4m37s
@@ -185,6 +197,7 @@ sample_external_url__up{url="https://httpstat.us/200"} 1.0
 sample_external_url__response_ms{url="https://httpstat.us/200"} 191.151
 ```
 
+
 # Prometheus Integration
 ## How to install Prometheus through Helm
 ```BASH
@@ -193,8 +206,6 @@ helm repo update
 helm install prometheus stable/prometheus -n <target namespace>
 
 For example,
-kubectl get pods -n url-monitoring
-
 kubectl get pods -n url-monitoring
 NAME                                            READY   STATUS      RESTARTS   AGE
 client-job-1603513200-9d7m4                     0/1     Completed   0          4m54s
@@ -213,19 +224,19 @@ urlmon-64c99b957f-nbktx                         1/1     Running     0          2
 ## How to access Prometheus Alert Manger console
 Execute port-forward to connect Prometheus from local to Kubernetes cluster 
 ```BAsh
-export POD_NAME=$(kubectl get pods --namespace <target namespace> -l "app=prometheus,component=server" -o jsonpath="{.items[0].metadata.name}")
-kubectl --namespace url-monitoring port-forward $POD_NAME 9090
+export POD_NAME=$(kubectl get pods -n <target namespace> -l "app=prometheus,component=server" -o jsonpath="{.items[0].metadata.name}")
+kubectl port-forward $POD_NAME 9090 -n <target namespace>
 Forwarding from 127.0.0.1:9090 -> 9090
 Forwarding from [::1]:9090 -> 9090
 ```
 Open http://localhost:9090 in your browser 
 ![Open Prometheus Alert Manger console](images/prometheus_alert_manager_console.png)
 
-## How to add urlmon GET /metrics in Prometheus
+## How to integrate urlmon's GET /metrics API with Prometheus
 Update prometheus-server configMap using kubectl edit
-```
+```BASH
 kubectl edit cm prometheus-server -n <target namespace>
-...BASH
+...
     - job_name: prometheus
       static_configs:
       - targets:
@@ -233,26 +244,27 @@ kubectl edit cm prometheus-server -n <target namespace>
     - job_name: url-monitoring # Append url-monitoring job
       static_configs:
       - targets:
-        - urlmon-service:8080
+        - urlmon-service:8080 # urlmon Service and port number
+...
 ```
 Check if url-monitoring is added in Prometheus target
 ![Check target_added](images/prometheus_check_target_added.png)
 
-Check if **sample_external_url__up** and **sample_external_url__response_ms** are added in Graph like this
+Check if **sample_external_url__up** and **sample_external_url__response_ms** are added as Graph like this:
 ![Check sample_external_url metrics](images/prometheus_sample_external_url_metrics_added.png)
 ![url-monitoring response graph](images/prometheus_response_ms_graph.png)
 
 # Grafana Integration
 ## How to install Grafana
 ```BASH
-kubectl -n url-monitoring create deployment grafana --image=docker.io/grafana/grafana:5.4.3
+kubectl -n <target namespace> create deployment grafana --image=docker.io/grafana/grafana:5.4.3
 deployment.apps/grafana created
 ```
 
 ## How to access to Grafana dashboard
-1. First get grafana pod name
+First get Grafana pod name
 ```BASH
-kubectl get pods -n url-monitoring
+kubectl get pods -n <target namespace>
 NAME                                            READY   STATUS      RESTARTS   AGE
 client-job-1603515180-zsvd6                     0/1     Completed   0          4m59s
 client-job-1603515240-zrvbd                     0/1     Completed   0          3m59s
@@ -267,9 +279,9 @@ prometheus-pushgateway-7d5f5746c7-mqzb6         1/1     Running     0          4
 prometheus-server-f8d46859b-t2mnv               2/2     Running     0          41m
 urlmon-64c99b957f-nbktx                         1/1     Running     0          35m
 ```
-2. Port-forward to the pod
+Port-forward to the Grafana pod via 3000
 ```BASH
-kubectl port-forward grafana-d7bd666bc-r2dpl 3000:3000 -n url-monitoring
+kubectl port-forward grafana-d7bd666bc-r2dpl 3000 -n <target namespace>
 ```
 
 ## How to create a simple graph Grafana dashboard
@@ -281,15 +293,10 @@ kubectl port-forward grafana-d7bd666bc-r2dpl 3000:3000 -n url-monitoring
 ![Add Grafana Graph](images/grafana_graph_add.png)
 4. Add/Edit Panel
 ![Add Grafana Panel](images/grafana_panel_add_edit.png)
-5. Select Prometheus as Data Source and put sample_external_url__up
+5. Select Prometheus as Data Source and put **sample_external_url__up**
 ![Select sample_external_url__up](images/grafana_select_prometheus_data_source.png)
 ![Select sample_external_url__up](images/grafana_put_sample_external_url__up.png)
 6. Add/Edit Panel one more
-7. Select Prometheus as Data Source and put sample_external_url__response_ms
-8. Check URL Monitoring Dashboard
+7. Select Prometheus as Data Source and put **sample_external_url__response_ms**
+8. Check URL Monitoring Dashboard and check if the panels visualize **sample_external_url__up** and **sample_external_url__response_ms** in a timeline history.  
 ![Grafana_URL_Monitoring](images/grafana_url_monitoring.png)
-
-| panel     | Description |
-|-----------|---------------------------------------------------------------|
-| sample_external_url__up      | Timeline based URL Availability 0(Down) or 1(Up)|
-| sample_external_url__response_ms  | Timeline based URL Response Time(ms) |
