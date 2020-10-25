@@ -184,20 +184,32 @@ kubectl apply -f <k8s manifest JSON file path>
 
 For example,
 kubectl apply -f k8s.json
+namespace/url-monitoring created
+deployment.apps/urlmon created
+service/urlmon-service created
+configmap/urlmon-config created
+cronjob.batch/client-job created
+
 kubectl get pods -n url-monitoring
 NAME                          READY   STATUS      RESTARTS   AGE
-client-job-1603505940-dzn5k   0/1     Completed   0          4m37s
-client-job-1603506000-zlrwk   0/1     Completed   0          3m37s
-client-job-1603506060-bmpkb   0/1     Completed   0          2m37s
-client-job-1603506120-db6rr   0/1     Completed   0          97s
-client-job-1603506180-xlncc   0/1     Completed   0          37s
-urlmon-64c99b957f-ttkl7       1/1     Running     0          29m
+client-job-1603644420-bjvj8   0/1     Completed   0          9s
+urlmon-64c99b957f-6hfl7       1/1     Running     0          58s
+urlmon-64c99b957f-bdg99       1/1     Running     0          58s
 
-kubectl logs -f client-job-1603506180-xlncc -n url-monitoring
+
+kubectl logs -f client-job-1603644420-bjvj8 -n url-monitoring
+# HELP sample_external_url__up Availability, UP or DOWN
+# TYPE sample_external_url__up gauge
 sample_external_url__up{url="https://httpstat.us/503"} 0.0
-sample_external_url__response_ms{url="https://httpstat.us/503"} 282.474
+# HELP sample_external_url__response_ms Elapsed Time(MS)
+# TYPE sample_external_url__response_ms gauge
+sample_external_url__response_ms{url="https://httpstat.us/503"} 136.144
+# HELP sample_external_url__up Availability, UP or DOWN
+# TYPE sample_external_url__up gauge
 sample_external_url__up{url="https://httpstat.us/200"} 1.0
-sample_external_url__response_ms{url="https://httpstat.us/200"} 191.151
+# HELP sample_external_url__response_ms Elapsed Time(MS)
+# TYPE sample_external_url__response_ms gauge
+sample_external_url__response_ms{url="https://httpstat.us/200"} 130.102
 ```
 
 # Prometheus Integration
@@ -287,18 +299,24 @@ kubectl port-forward grafana-d7bd666bc-r2dpl 3000 -n <target namespace>
 ```
 
 ## How to create a simple graph Grafana dashboard
-1. Click Dashboards -> Manage
+1. Add DataSource
+![Add DataSource](images/grafana_add_datasource.png)
+2. Configure Prometheus
+![Select Prometheus](images/grafana_select_prometheus.png)
+![Configure Prometheus](images/grafana_configure_prometheus.png)
+You need to select **http://prometheus-server:80** in HTTP:URL because Prometheus Kubernetes service and port are **prometheus-server** and **80** respectively and Prometheus and Grafana are installed in same namespace. 
+3. Click Dashboards -> Manage
 ![Manage Grafana Dashboard](images/grafana_dashboard_manage.png)
-2. Add Dashboard
+4. Add Dashboard
 ![Add Grafana Dashboard](images/grafana_dashboard_add.png)
-3. Add Graph
+5. Add Graph
 ![Add Grafana Graph](images/grafana_graph_add.png)
-4. Add/Edit Panel
+6. Add/Edit Panel
 ![Add Grafana Panel](images/grafana_panel_add_edit.png)
-5. Select Prometheus as Data Source and put **sample_external_url__up**
+7. Select Prometheus as Data Source and put **sample_external_url__up**
 ![Select sample_external_url__up](images/grafana_select_prometheus_data_source.png)
 ![Select sample_external_url__up](images/grafana_put_sample_external_url__up.png)
-6. Add/Edit Panel one more
-7. Select Prometheus as Data Source and put **sample_external_url__response_ms**
-8. Check URL Monitoring Dashboard and check if the panels visualize **sample_external_url__up** and **sample_external_url__response_ms** in a timeline history.  
+8. Add/Edit Panel one more
+9. Select Prometheus as Data Source and put **sample_external_url__response_ms**
+10. Check URL Monitoring Dashboard and check if the panels visualize **sample_external_url__up** and **sample_external_url__response_ms** in a timeline history.  
 ![Grafana_URL_Monitoring](images/grafana_url_monitoring.png)
