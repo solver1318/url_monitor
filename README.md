@@ -8,6 +8,7 @@ A simple python webserver (exporter) which collects availability and response ti
 | HTTP method | Path | Description |
 |-------------|------|-------------|
 | GET | /metrics | Collect availability, UP(1) or DOWN(0), and response time(ms) for each target URL and return Prometheus format output|
+
 In the below example, the target URL == [https://httpstat.us/503, https://httpstat.us/200] and each URL has 2 prometheus outputs, **sample_external_url__up** and **sample_external_url__response_ms**.  
 ```BASH
 sample_external_url__up{url="https://httpstat.us/503"} 0.0
@@ -167,6 +168,7 @@ The Kubernetes Manifest includes the below 5 resources.
 | Service | urlmon-service | Kubernetes internal load balancer and redirect traffics to urlmon pod(s) based on LB policy |
 | ConfigMap | urlmon-config | Included config.json which includes target URLs |
 | CronJob | client-job | Client Cronjob which accesses to http://urlmon-service:8080/metrics every 1min and receives the metrics for testing (Integration Test) |
+
 **NOTE**: One design intent is that we can modify target URL list on the fly by editing **urlmon-config** Config map.
 ```BASH
 apiVersion: v1
@@ -196,7 +198,6 @@ sample_external_url__response_ms{url="https://httpstat.us/503"} 282.474
 sample_external_url__up{url="https://httpstat.us/200"} 1.0
 sample_external_url__response_ms{url="https://httpstat.us/200"} 191.151
 ```
-
 
 # Prometheus Integration
 ## How to install Prometheus through Helm
