@@ -196,7 +196,10 @@ client-job-1603644420-bjvj8   0/1     Completed   0          9s
 urlmon-64c99b957f-6hfl7       1/1     Running     0          58s
 urlmon-64c99b957f-bdg99       1/1     Running     0          58s
 
+```
 
+## Response of GET /metrics
+```BASH
 kubectl logs -f client-job-1603644420-bjvj8 -n url-monitoring
 # HELP sample_external_url__up Availability, UP or DOWN
 # TYPE sample_external_url__up gauge
