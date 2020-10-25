@@ -22,7 +22,8 @@ Need to prepare the below prerequisites before start.
 1. python3
 2. jsonnet
 3. docker
-4. kubectl
+4. kubectl + any Kubernetes cluster access \
+**NOTE**: In this description, I set up a local v1.18.8 Kubernetes cluster.
 5. pip packages
 ```BASH
 pip install -r requirements.txt
