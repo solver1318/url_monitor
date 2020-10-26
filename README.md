@@ -324,9 +324,9 @@ You need to select **http://prometheus-server:80** in HTTP:URL because Prometheu
 
 # Final results
 **sample_external_url__up** and **sample_external_url__response_ms** metrics are visualized at both **Prometheus** and **Grafana** per URL in a timeline manner. \
-[Prometheus]
+####Prometheus
 ![Prometheus_sample_external_url__up](images/Prometheus_sample_external_url__up.png)
 ![Prometheus_sample_external_url__response_ms](images/Prometheus_sample_external_url__response_ms.png)
 
-[Grafana]  
+####Grafana  
 ![Grafana_URL_Monitoring](images/grafana_url_monitoring.png)
