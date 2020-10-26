@@ -10,6 +10,10 @@ class TestConfig(unittest.TestCase, TestBase):
         self.config = self.getConfig()
 
     def test_getTargets(self):
+        '''
+        Check if the number of target URLs from Config object is correct.
+        :return:
+        '''
         with open(Constants.CONFIG_JSON) as json_file:
             data = json.load(json_file)
         self.assertEqual(len(data['TARGETS']), len(self.config.getTargets()),

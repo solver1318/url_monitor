@@ -7,6 +7,10 @@ from http_connector import HTTPConnector
 
 class TestCollector(unittest.TestCase, TestBase):
     def setUp(self):
+        '''
+        Initialize connector objects which will access target URLs and start a mock server.
+        :return:
+        '''
         self.config = self.getConfig()
         self.connectors = []
         for url in self.config.getTargets():
@@ -14,6 +18,10 @@ class TestCollector(unittest.TestCase, TestBase):
         self.startMockServer()
 
     def test_collectSuccessfully(self):
+        '''
+        Access successful REST APIs via Collector and check if the number of results is correct.
+        :return:
+        '''
         res = []
         for connector in self.connectors:
             registry = CollectorRegistry()
@@ -22,6 +30,10 @@ class TestCollector(unittest.TestCase, TestBase):
         self.assertTrue(len(res) == len(self.connectors))
 
     def test_collectFromWrongURL(self):
+        '''
+        Access wrong REST API and check if Exception raises up.
+        :return:
+        '''
         wrongURL = '404'
         wrongURLConnector = HTTPConnector('http://localhost:%s/%s' % (Constants.MOCK_SERVER_PORT, wrongURL))
         registry = CollectorRegistry()
@@ -32,4 +44,8 @@ class TestCollector(unittest.TestCase, TestBase):
             self.assertTrue(wrongURL in str(e))
 
     def tearDown(self):
+        '''
+        Kill the mock server.
+        :return:
+        '''
         self.stopMockServer()
