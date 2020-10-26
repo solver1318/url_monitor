@@ -321,5 +321,7 @@ You need to select **http://prometheus-server:80** in HTTP:URL because Prometheu
 ![Select sample_external_url__up](images/grafana_put_sample_external_url__up.png)
 8. Add/Edit Panel one more
 9. Select Prometheus as Data Source and put **sample_external_url__response_ms**
-10. Check URL Monitoring Dashboard and check if the panels visualize **sample_external_url__up** and **sample_external_url__response_ms** in a timeline history.  
+
+# Final result
+sample_external_url__up and sample_external_url__response_ms metrics are visualized at **Grafana** in a timeline manner.  
 ![Grafana_URL_Monitoring](images/grafana_url_monitoring.png)
