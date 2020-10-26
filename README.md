@@ -323,8 +323,8 @@ You need to select **http://prometheus-server:80** in HTTP:URL because Prometheu
 9. Select Prometheus as Data Source and put **sample_external_url__response_ms**
 
 # Final results
-##Prometheus
+## Prometheus
 ![Prometheus_sample_external_url__up](images/Prometheus_sample_external_url__up.png)
 ![Prometheus_sample_external_url__response_ms](images/Prometheus_sample_external_url__response_ms.png)
-##Grafana  
+## Grafana  
 ![Grafana_URL_Monitoring](images/grafana_url_monitoring.png)
